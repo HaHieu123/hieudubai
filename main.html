@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Women's Day</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Heart animation */
+        #heart-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+        
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 3s ease-in-out;
+        }
+        
+        /* Text styles */
+        .name {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #FFFFFF;
+            font-size: min(3.5vw, 48px);
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            z-index: 15;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+        }
+        
+        .class-code {
+            position: absolute;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #FF8DA1;
+            font-size: min(4vw, 56px);
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            z-index: 15;
+            text-shadow: 0 0 15px rgba(255, 141, 161, 0.7);
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+            animation: pulse 2s infinite;
+        }
+        
+        /* Names container */
+        .names-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        .name-item {
+            position: absolute;
+            color: #FFFFFF;
+            font-size: min(1.8vw, 24px);
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out;
+            transform: translate(-50%, -50%) scale(0.5);
+            white-space: nowrap;
+            z-index: 5;
+            padding: 8px 16px;
+            background: rgba(255, 141, 161, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .name-item.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        /* Petals styles */
+        .petals-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 3;
+        }
+        
+        .petal {
+            position: absolute;
+            top: -50px;
+            width: 25px;
+            height: 25px;
+            background: linear-gradient(135deg, #ff8da1, #ffb6c1);
+            border-radius: 50% 0 50% 50%;
+            transform: rotate(45deg);
+            opacity: 0.8;
+            filter: drop-shadow(0 0 5px rgba(255, 141, 161, 0.5));
+            animation: fall linear forwards;
+        }
+        
+        /* Stars background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle linear infinite;
+        }
+        
+        /* Music player */
+        .music-player {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 141, 161, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 100;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(255, 141, 161, 0.3);
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        
+        .music-player.show {
+            opacity: 1;
+        }
+        
+        .music-info {
+            color: white;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .song-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        /* Keyframes */
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+
+        /* Loading screen */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 1s ease-in-out;
+        }
+        
+        .loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loading-text {
+            color: #FF8DA1;
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="loading-text">Đang tải...</div>
+    </div>
+
+    <div class="container">
+        <div class="stars" id="stars"></div>
+        <div class="petals-container" id="petals-container"></div>
+        <div class="names-container" id="names-container"></div>
+        
+        <div id="heart-container">
+            <canvas id="pinkboard"></canvas>
+        </div>
+        
+        <h1 class="name" id="womenDayText">HAPPY VIETNAMESE WOMEN'S DAY</h1>
+        <h1 class="class-code" id="classText">IT67A</h1>
+        
+        <div class="music-player" id="musicPlayer">
+            <div class="music-info">
+                <div class="song-title">Lụy Tình - Hồ Quang Hiếu</div>
+                <div class="song-status" id="songStatus">Đang phát...</div>
+            </div>
+            <div class="controls">
+                <button class="control-btn" id="playBtn">▶</button>
+                <button class="control-btn" id="pauseBtn">⏸</button>
+                <button class="control-btn" id="volumeBtn">🔊</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- OPTIMIZED HEART SETTINGS ---
+        const settings = {
+            particles: {
+                length: 5000,    // GIẢM XUỐNG để tối ưu hiệu suất
+                duration: 3,     // Thời gian ngắn hơn
+                velocity: 60,    // Tốc độ chậm hơn
+                effect: -1.2,    // Hiệu ứng nhẹ hơn
+                size: 6,         // Kích thước nhỏ hơn
+            },
+        };
+
+        // --- LOADING SCREEN ---
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            setTimeout(() => {
+                loading.classList.add('hidden');
+                setTimeout(() => {
+                    loading.remove();
+                }, 1000);
+            }, 1000);
+        }
+
+        // --- STARS BACKGROUND ---
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = 80; // Giảm số lượng sao
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                const size = Math.random() * 1.5; // Kích thước nhỏ hơn
+                const duration = 2 + Math.random() * 4;
+                
+                star.style.left = `${x}vw`;
+                star.style.top = `${y}vh`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.animationDuration = `${duration}s`;
+                
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // --- OPTIMIZED FALLING PETALS ---
+        function createPetals() {
+            const petalsContainer = document.getElementById('petals-container');
+            const petalCount = 25; // Giảm số lượng cánh hoa
+            
+            for (let i = 0; i < petalCount; i++) {
+                setTimeout(() => {
+                    createPetal(petalsContainer);
+                }, i * 500); // Tăng delay
+            }
+            
+            // Giảm tần suất tạo cánh hoa mới
+            setInterval(() => {
+                if (Math.random() > 0.3) { // 70% chance tạo cánh hoa mới
+                    createPetal(petalsContainer);
+                }
+            }, 800);
+        }
+
+        function createPetal(container) {
+            // Giới hạn số lượng cánh hoa đồng thời
+            if (container.children.length > 20) return;
+            
+            const petal = document.createElement('div');
+            petal.classList.add('petal');
+            
+            const left = Math.random() * 100;
+            const size = 12 + Math.random() * 10; // Kích thước nhỏ hơn
+            const duration = 4 + Math.random() * 8;
+            const delay = Math.random() * 3;
+            const horizontalMove = (Math.random() - 0.5) * 50; // Di chuyển ngang ít hơn
+            
+            petal.style.left = `${left}vw`;
+            petal.style.width = `${size}px`;
+            petal.style.height = `${size}px`;
+            petal.style.animationDuration = `${duration}s`;
+            petal.style.animationDelay = `${delay}s`;
+            petal.style.setProperty('--move-x', `${horizontalMove}vw`);
+            
+            container.appendChild(petal);
+            
+            setTimeout(() => {
+                if (petal.parentNode) {
+                    petal.parentNode.removeChild(petal);
+                }
+            }, (duration + delay) * 1000);
+        }
+
+        // --- NAMES ANIMATION ---
+        function createNames() {
+            const namesContainer = document.getElementById('names-container');
+            
+            const names = [
+                "Lê Thị Thùy Dung",
+                "Dương Thúy Hằng",
+                "Nguyễn Hà Linh",
+                "Nguyễn Thị Thảo Anh",
+                "Võ Thị Thảo Nguyên",
+                "Nguyễn Khánh Nhi",
+                "Nguyễn Thị Mai Phương",
+                "Trần Khánh Ngọc"
+            ];
+            
+            const namePositions = calculateOptimizedPositions(names.length);
+            
+            names.forEach((name, index) => {
+                const nameElement = document.createElement('div');
+                nameElement.classList.add('name-item');
+                nameElement.textContent = name;
+                
+                const position = namePositions[index];
+                nameElement.style.left = `${position.x}%`;
+                nameElement.style.top = `${position.y}%`;
+                
+                namesContainer.appendChild(nameElement);
+            });
+            
+            animateNamesSequentially();
+        }
+
+        function calculateOptimizedPositions(count) {
+            const positions = [];
+            const centerX = 50;
+            const centerY = 50;
+            const radius = 35;
+            
+            for (let i = 0; i < count; i++) {
+                const angle = (i / count) * 2 * Math.PI;
+                const randomOffset = (Math.random() - 0.5) * 8; // Giảm độ lệch
+                const x = centerX + (radius + randomOffset) * Math.cos(angle);
+                const y = centerY + (radius + randomOffset) * Math.sin(angle);
+                
+                positions.push({ x: x, y: y });
+            }
+            
+            return positions;
+        }
+
+        function animateNamesSequentially() {
+            const nameItems = document.querySelectorAll('.name-item');
+            let currentIndex = 0;
+            
+            function showNextName() {
+                if (currentIndex < nameItems.length) {
+                    nameItems[currentIndex].classList.add('active');
+                    currentIndex++;
+                    setTimeout(showNextName, 1000); // Tăng delay
+                } else {
+                    setTimeout(hideAllNames, 3000);
+                }
+            }
+            
+            function hideAllNames() {
+                nameItems.forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                setTimeout(() => {
+                    currentIndex = 0;
+                    showNextName();
+                }, 1500);
+            }
+            
+            setTimeout(showNextName, 9000); // Delay lâu hơn
+        }
+
+        // --- OPTIMIZED MUSIC PLAYER FOR LỤY TÌNH - HOÀNG LỤT ---
+        function setupMusicPlayer() {
+            const musicPlayer = document.getElementById('musicPlayer');
+            const playBtn = document.getElementById('playBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const volumeBtn = document.getElementById('volumeBtn');
+            const songStatus = document.getElementById('songStatus');
+            
+            const audio = new Audio();
+            
+            // THAY THẾ BẰNG LINK BÀI HÁT "LỤY TÌNH" - HOÀNG LỤT
+            // Bạn cần tìm link trực tiếp đến file mp3 bài hát này
+            audio.src = 'luytinh.mp3'; // THAY THẾ LINK NÀY
+            audio.volume=0.1;
+            audio.preload = "none";
+            audio.loop = true;
+            audio.volume = 0.7; // Set volume mặc định 70%
+            
+            // Hiển thị music player sau 3 giây
+            setTimeout(() => {
+                musicPlayer.classList.add('show');
+            }, 3000);
+            
+            // Xử lý sự kiện play
+            playBtn.addEventListener('click', () => {
+                audio.play().then(() => {
+                    songStatus.textContent = 'Đang phát: Lụy Tình - Hoàng Lụt';
+                    playBtn.style.display = 'none';
+                    pauseBtn.style.display = 'flex';
+                }).catch(e => {
+                    console.error('Lỗi phát nhạc:', e);
+                    songStatus.textContent = 'Lỗi: Không thể phát nhạc. Click để thử lại.';
+                    // Cho phép click vào status để thử lại
+                    songStatus.style.cursor = 'pointer';
+                    songStatus.onclick = () => audio.play();
+                });
+            });
+            
+            // Xử lý sự kiện pause
+            pauseBtn.addEventListener('click', () => {
+                audio.pause();
+                songStatus.textContent = 'Đã tạm dừng';
+                playBtn.style.display = 'flex';
+                pauseBtn.style.display = 'none';
+            });
+            
+            // Xử lý sự kiện volume/mute
+            let isMuted = false;
+            volumeBtn.addEventListener('click', () => {
+                isMuted = !isMuted;
+                audio.muted = isMuted;
+                volumeBtn.textContent = isMuted ? '🔇' : '🔊';
+                volumeBtn.title = isMuted ? 'Bật tiếng' : 'Tắt tiếng';
+            });
+            
+            // Xử lý sự kiện khi audio có thể phát được
+            audio.addEventListener('canplay', () => {
+                songStatus.textContent = 'Sẵn sàng phát: Lụy Tình - Hoàng Lụt';
+                playBtn.disabled = false;
+            });
+            
+            // Xử lý lỗi loading audio
+            audio.addEventListener('error', (e) => {
+                console.error('Lỗi tải nhạc:', e);
+                songStatus.textContent = 'Lỗi tải nhạc. Kiểm tra lại link.';
+                playBtn.disabled = true;
+            });
+            
+            // Xử lý khi audio kết thúc (cho loop)
+            audio.addEventListener('ended', () => {
+                if (audio.loop) {
+                    audio.currentTime = 0;
+                    audio.play();
+                }
+            });
+            
+            // Auto-play sau khi user tương tác với trang
+            let userInteracted = false;
+            
+            const enableAutoPlay = () => {
+                if (!userInteracted) {
+                    userInteracted = true;
+                    // Thử auto-play sau khi user đã tương tác
+                    setTimeout(() => {
+                        audio.play().then(() => {
+                            songStatus.textContent = 'Đang phát: Lụy Tình - Hoàng Lụt';
+                            playBtn.style.display = 'none';
+                            pauseBtn.style.display = 'flex';
+                        }).catch(e => {
+                            // Nếu auto-play thất bại, vẫn hiển thị nút play bình thường
+                            songStatus.textContent = 'Nhấn play để phát: Lụy Tình - Hoàng Lụt';
+                        });
+                    }, 1000);
+                }
+            };
+            
+            // Bắt sự kiện click đầu tiên trên trang để kích hoạt auto-play
+            document.addEventListener('click', enableAutoPlay, { once: true });
+            
+            // Hoặc bắt sự kiện touch cho mobile
+            document.addEventListener('touchstart', enableAutoPlay, { once: true });
+            
+            // Trạng thái ban đầu
+            songStatus.textContent = 'Nhấn play để phát: Lụy Tình - Hoàng Lụt';
+            pauseBtn.style.display = 'none'; // Ẩn nút pause ban đầu
+        }
+
+        // Thêm CSS để cải thiện giao diện music player
+        const musicStyles = `
+            .music-player {
+                background: rgba(255, 141, 161, 0.25) !important;
+                backdrop-filter: blur(15px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            }
+            
+            .control-btn {
+                background: rgba(255, 255, 255, 0.15) !important;
+                transition: all 0.3s ease !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            }
+            
+            .control-btn:hover {
+                background: rgba(255, 255, 255, 0.25) !important;
+                transform: scale(1.1) !important;
+            }
+            
+            .control-btn:active {
+                transform: scale(0.95) !important;
+            }
+            
+            .song-title {
+                color: #FF8DA1 !important;
+                font-weight: bold !important;
+                font-size: 14px !important;
+            }
+            
+            .song-status {
+                font-size: 12px !important;
+                opacity: 0.9 !important;
+                cursor: default !important;
+            }
+            
+            .song-status:hover {
+                opacity: 1 !important;
+            }
+        `;
+
+        // --- OPTIMIZED HEART ANIMATION ---
+        class OptimizedHeartAnimation {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.context = canvas.getContext('2d');
+                this.particles = new OptimizedParticlePool(settings.particles.length);
+                this.particleRate = settings.particles.length / settings.particles.duration;
+                this.time = 0;
+                this.lastFrameTime = performance.now();
+                this.isRunning = false;
+                
+                this.image = this.createParticleImage();
+                this.setupEventListeners();
+            }
+            
+            createParticleImage() {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = settings.particles.size;
+                canvas.height = settings.particles.size;
+                
+                context.fillStyle = '#FF8DA1';
+                context.beginPath();
+                context.arc(settings.particles.size/2, settings.particles.size/2, settings.particles.size/2, 0, Math.PI * 2);
+                context.fill();
+                
+                const image = new Image();
+                image.src = canvas.toDataURL();
+                return image;
+            }
+            
+            setupEventListeners() {
+                window.addEventListener('resize', () => this.onResize());
+            }
+            
+            onResize() {
+                this.canvas.width = this.canvas.clientWidth;
+                this.canvas.height = this.canvas.clientHeight;
+            }
+            
+            pointOnHeart(t) {
+                return {
+                    x: 160 * Math.pow(Math.sin(t), 3),
+                    y: 130 * Math.cos(t) - 50 * Math.cos(2 * t) - 20 * Math.cos(3 * t) - 10 * Math.cos(4 * t) + 25
+                };
+            }
+            
+            start() {
+                this.isRunning = true;
+                this.onResize();
+                this.render();
+            }
+            
+            stop() {
+                this.isRunning = false;
+            }
+            
+            render() {
+                if (!this.isRunning) return;
+                
+                const currentTime = performance.now();
+                const deltaTime = Math.min((currentTime - this.lastFrameTime) / 1000, 0.033); // Giới hạn 30fps
+                this.lastFrameTime = currentTime;
+                
+                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Tạo ít particle hơn mỗi frame
+                const amount = this.particleRate * deltaTime * 0.8;
+                for (let i = 0; i < amount; i++) {
+                    const pos = this.pointOnHeart(Math.PI - 2 * Math.PI * Math.random());
+                    const dir = this.normalizeVector(pos.x, pos.y, settings.particles.velocity);
+                    this.particles.add(
+                        this.canvas.width / 2 + pos.x, 
+                        this.canvas.height / 2 - pos.y, 
+                        dir.x, 
+                        -dir.y
+                    );
+                }
+                
+                this.particles.update(deltaTime);
+                this.particles.draw(this.context, this.image);
+                
+                requestAnimationFrame(() => this.render());
+            }
+            
+            normalizeVector(x, y, length) {
+                const currentLength = Math.sqrt(x * x + y * y);
+                if (currentLength === 0) return { x: 0, y: 0 };
+                return {
+                    x: (x / currentLength) * length,
+                    y: (y / currentLength) * length
+                };
+            }
+        }
+
+        class OptimizedParticlePool {
+            constructor(length) {
+                this.particles = new Array(length);
+                for (let i = 0; i < length; i++) {
+                    this.particles[i] = new OptimizedParticle();
+                }
+                this.firstActive = 0;
+                this.firstFree = 0;
+                this.duration = settings.particles.duration;
+            }
+            
+            add(x, y, dx, dy) {
+                this.particles[this.firstFree].initialize(x, y, dx, dy);
+                this.firstFree = (this.firstFree + 1) % this.particles.length;
+                if (this.firstActive === this.firstFree) {
+                    this.firstActive = (this.firstActive + 1) % this.particles.length;
+                }
+            }
+            
+            update(deltaTime) {
+                let i = this.firstActive;
+                while (i !== this.firstFree) {
+                    this.particles[i].update(deltaTime);
+                    i = (i + 1) % this.particles.length;
+                }
+                
+                while (this.particles[this.firstActive].age >= this.duration && this.firstActive !== this.firstFree) {
+                    this.firstActive = (this.firstActive + 1) % this.particles.length;
+                }
+            }
+            
+            draw(context, image) {
+                let i = this.firstActive;
+                while (i !== this.firstFree) {
+                    this.particles[i].draw(context, image);
+                    i = (i + 1) % this.particles.length;
+                }
+            }
+        }
+
+        class OptimizedParticle {
+            constructor() {
+                this.position = { x: 0, y: 0 };
+                this.velocity = { x: 0, y: 0 };
+                this.acceleration = { x: 0, y: 0 };
+                this.age = 0;
+            }
+            
+            initialize(x, y, dx, dy) {
+                this.position.x = x;
+                this.position.y = y;
+                this.velocity.x = dx;
+                this.velocity.y = dy;
+                this.acceleration.x = dx * settings.particles.effect;
+                this.acceleration.y = dy * settings.particles.effect;
+                this.age = 0;
+            }
+            
+            update(deltaTime) {
+                this.position.x += this.velocity.x * deltaTime;
+                this.position.y += this.velocity.y * deltaTime;
+                this.velocity.x += this.acceleration.x * deltaTime;
+                this.velocity.y += this.acceleration.y * deltaTime;
+                this.age += deltaTime;
+            }
+            
+            draw(context, image) {
+                const progress = this.age / settings.particles.duration;
+                const size = image.width * (1 - progress * progress); // Easing đơn giản hơn
+                const alpha = 1 - progress;
+                
+                context.globalAlpha = alpha;
+                context.drawImage(
+                    image, 
+                    this.position.x - size / 2, 
+                    this.position.y - size / 2, 
+                    size, 
+                    size
+                );
+            }
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Khởi tạo các hiệu ứng đơn giản trước
+            createStars();
+            createPetals();
+            createNames();
+            setupMusicPlayer();
+            hideLoading();
+            
+            const womenDayText = document.getElementById('womenDayText');
+            const classText = document.getElementById('classText');
+            const pinkboardCanvas = document.getElementById('pinkboard');
+            
+            // Timeline animation
+            setTimeout(() => {
+                womenDayText.style.opacity = 1;
+            }, 500);
+            
+            setTimeout(() => {
+                classText.style.opacity = 1;
+            }, 2000);
+            
+            setTimeout(() => {
+                womenDayText.style.opacity = 0;
+                classText.style.opacity = 0;
+            }, 5000);
+            
+            // Khởi động heart animation sau khi mọi thứ đã load
+            setTimeout(() => {
+                pinkboardCanvas.style.opacity = 1;
+                const heartAnimation = new OptimizedHeartAnimation(pinkboardCanvas);
+                heartAnimation.start();
+            }, 7000);
+        });
+
+        // Add fall animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fall {
+                0% {
+                    transform: translate(0, 0) rotate(45deg);
+                    opacity: 0.8;
+                }
+                100% {
+                    transform: translate(var(--move-x, 0), 100vh) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
